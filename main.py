@@ -57,6 +57,18 @@ class Game:
             self.player.pos.y += abs(self.player.vel.y)
             for plat in self.platforms:
                 plat.rect.y += abs(self.player.vel.y)
+                # Remove the platforms if they go off the screen
+                if plat.rect.top >= HEIGHT:
+                    plat.kill()
+
+        # Need to spawn new platforms to keep the game going
+        while len(self.platforms) < 6:
+            width = random.randrange(50, 100)
+            p = Platform(random.randrange(0, WIDTH - width),
+                         random.randrange(-75, -30),
+                         width, 20)
+            self.platforms.add(p)
+            self.all_sprites.add(p)
 
     def events(self):
         # The game loop events
