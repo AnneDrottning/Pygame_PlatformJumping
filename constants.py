@@ -7,6 +7,7 @@ HEIGHT    = 600
 FPS       =  60
 TITLE     = "Platform Jumping"
 FONT_NAME = 'arial'
+HS_FILE   = "highscore.txt"
 
 # Colours:
 WHITE     = (255, 255, 255)

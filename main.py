@@ -1,6 +1,7 @@
 # Import packages
-import pygame as pg
+import pygame as     pg
 import random
+from   os     import path
 
 # Import files
 from constants import *
@@ -21,6 +22,21 @@ class Game:
         # Get the font name for the system, get the closest match to
         # what we want
         self.font_name = pg.font.match_font(FONT_NAME)
+
+        # Load data needed for the game:
+        self.load_data()
+
+    def load_data(self):
+        # Want to load the highscore file to see if we have a previous
+        # highscore
+        self.dir = path.dirname(__file__)
+        with open(path.join(self.dir, HS_FILE), 'w') as f:
+            # 'w' will create a file if it does not exist, and allow
+            # both reading and writing
+            try:
+                self.highscore = int(f.read())
+            except:
+                self.highscore = 0
 
     def new(self):
         # To start a new game
@@ -113,6 +129,8 @@ class Game:
                         WIDTH / 2, HEIGHT / 2)
         self.draw_text("Press a key to play", 22, WHITE, WIDTH/2,
                         HEIGHT * 3 / 4)
+        self.draw_text("High Score: " + str(self.highscore), 22, WHITE,
+                        WIDTH / 2, 15)
         pg.display.flip()
         self.wait_for_key()
 
@@ -126,6 +144,15 @@ class Game:
                         WIDTH / 2, HEIGHT / 2)
         self.draw_text("Press any key to play again", 22, WHITE,
                         WIDTH / 2, HEIGHT * 3 / 4)
+        if self.score > self.highscore:
+            self.highscore = self.score
+            self.draw_text("NEW HIGHSCORE!", 22, WHITE, WIDTH / 2, HEIGHT / 2 + 40)
+            with open(path.join(self.dir, HS_FILE), 'w') as f:
+                f.write(str(self.score))
+        else:
+            self.draw_text("High Score: " + str(self.highscore), 22, WHITE,
+                            WIDTH / 2, HEIGHT / 2 + 40)
+
         pg.display.flip()
         self.wait_for_key()
 
@@ -140,7 +167,6 @@ class Game:
                     self.running = False
                 if event.type == pg.KEYUP:
                     waiting = False
-
 
     def draw_text(self, text, size, color, x, y):
         # Function to draw the text we want
