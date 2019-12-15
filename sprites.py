@@ -27,7 +27,7 @@ class Player(pg.sprite.Sprite):
 
 
     def update(self):
-        self.acc = vec(0, 0)
+        self.acc = vec(0, 0.5)
         # Check what keys are pressed:
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
@@ -36,7 +36,7 @@ class Player(pg.sprite.Sprite):
             self.acc.x =  PLAYER_ACCELERATION
 
         # Adjust the sprite placement according to the speed
-        self.acc += self.vel * PLAYER_FRICTION
+        self.acc.x += self.vel.x * PLAYER_FRICTION
         self.vel += self.acc
         self.pos += self.vel + (0.5 * self.acc)
 
@@ -46,4 +46,16 @@ class Player(pg.sprite.Sprite):
         if self.pos.x < 0:
             self.pos.x = WIDTH
 
-        self.rect.center = self.pos
+
+        self.rect.midbottom = self.pos
+
+class Platform(pg.sprite.Sprite):
+    def __init__(self, x, y, w, h):
+        # Want to define the size and position everytime we define a new
+        # platform
+        pg.sprite.Sprite.__init__(self)
+        self.image  = pg.Surface((w, h))
+        self.image.fill(GREEN)
+        self.rect   = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
