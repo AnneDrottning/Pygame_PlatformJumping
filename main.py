@@ -1,46 +1,76 @@
-import pygame
+# Import packages
+import pygame as pg
 import random
 
-WIDTH  = 360
-HEIGHT = 480
-FPS    =  30
+# Import files
+from constants import *
+from sprites   import *
 
-# Define the colours we want to use:
-WHITE = (255, 255, 255)
-BLACK = (  0,   0,   0)
-RED   = (255,   0,   0)
-GREEN = (  0, 255,   0)
-BLUE  = (  0,   0, 255)
+class Game:
+    def __init__(self):
+        # Initialize the game window, etc.
+        pg.init()
+        pg.mixer.init()
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        pg.display.set_caption(TITLE)
+        self.clock  = pg.time.Clock()
 
-# Initialize pygame and create the window
-pygame.init()
-pygame.mixer.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Platform Jumping")
-clock  = pygame.time.Clock()
+        # Game variable to determine wether the game is running or not:
+        self.running = True
 
-all_sprites = pygame.sprite.Group()
+    def new(self):
+        # To start a new game
+        # Create the sprites
+        self.all_sprites = pg.sprite.Group()
+        self.player = Player()
+        self.all_sprites.add(self.player)
+        self.run()
 
-# Game loop
-running = True
-while running:
-    # Keep loop running at the right speed
-    clock.tick(FPS)
+    def run(self):
+        # The actual game loop
+        # Keep loop running at the right speed
+        self.playing = True
+        while self.playing:
+            self.clock.tick(FPS)
+            self.events()
+            self.update()
+            self.draw()
 
-    # Process input events:
-    for event in pygame.event.get():
-        # Check for closing window
-        if event.type == pygame.QUIT:
-            running = False
+    def update(self):
+        # The game loop update
+        # Update:
+        self.all_sprites.update()
 
-    # Update:
-    all_sprites.update()
+    def events(self):
+        # The game loop events
+        # Process input events:
+        for event in pg.event.get():
+            # Check for closing window
+            if event.type == pg.QUIT:
+                if self.playing:
+                    self.playing = False
+                self.running = False
 
-    # Draw / render
-    screen.fill(BLACK)
-    all_sprites.draw(screen)
+    def draw(self):
+        # Drawing the game loop to the screen
+        self.screen.fill(BLACK)
+        self.all_sprites.draw(self.screen)
 
-    # After drawing everything, we flip the display
-    pygame.display.flip()
+        # After drawing everything, we flip the display
+        pg.display.flip()
 
-pygame.quit()
+    def show_start_screen(self):
+        # Game start screen
+        pass
+
+    def show_go_screen(self):
+        # Game over / start over screen
+        pass
+
+# Make an instance of the game object:
+g = Game()
+g.show_start_screen()
+while g.running:
+    g.new()
+    g.show_go_screen()
+pg.quit()
