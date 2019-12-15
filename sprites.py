@@ -10,10 +10,11 @@ from constants import *
 vec = pg.math.Vector2
 
 class Player(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, game):
         # Initialize a pygame sprite:
         pg.sprite.Sprite.__init__(self)
-
+        # Want the player to know about the game
+        self.game  = game
         # Create a simple sprite:
         self.image = pg.Surface((30, 40))
         self.image.fill(YELLOW);
@@ -25,9 +26,17 @@ class Player(pg.sprite.Sprite):
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
+    def jump(self):
+        # Only want to jump if we are standing on a platform
+        self.rect.x += 1
+        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+        self.rect.x -= 1
+        if hits:
+            self.vel.y = JUMP_HEIGHT
+
 
     def update(self):
-        self.acc = vec(0, 0.5)
+        self.acc = vec(0, PLAYER_GRAVITY)
         # Check what keys are pressed:
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
