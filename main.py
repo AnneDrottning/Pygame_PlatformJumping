@@ -18,8 +18,13 @@ class Game:
         # Game variable to determine wether the game is running or not:
         self.running = True
 
+        # Get the font name for the system, get the closest match to
+        # what we want
+        self.font_name = pg.font.match_font(FONT_NAME)
+
     def new(self):
         # To start a new game
+        self.score       = 0
         # Create the sprites
         self.all_sprites = pg.sprite.Group()
         self.platforms   = pg.sprite.Group()
@@ -60,6 +65,15 @@ class Game:
                 # Remove the platforms if they go off the screen
                 if plat.rect.top >= HEIGHT:
                     plat.kill()
+                    self.score += 10
+        # If we die:
+        if self.player.rect.bottom > HEIGHT:
+            for sprite in self.all_sprites:
+                sprite.rect.y -= max(self.player.vel.y, 10)
+                if sprite.rect.bottom < 0:
+                    sprite.kill()
+        if len(self.platforms) == 0:
+            self.playing = False
 
         # Need to spawn new platforms to keep the game going
         while len(self.platforms) < 6:
@@ -87,7 +101,7 @@ class Game:
         # Drawing the game loop to the screen
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
-
+        self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         # After drawing everything, we flip the display
         pg.display.flip()
 
@@ -98,6 +112,14 @@ class Game:
     def show_go_screen(self):
         # Game over / start over screen
         pass
+
+    def draw_text(self, text, size, color, x, y):
+        # Function to draw the text we want
+        font             = pg.font.Font(self.font_name, size)
+        text_surface     = font.render(text, True, color)
+        text_rect        = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        self.screen.blit(text_surface, text_rect)
 
 # Make an instance of the game object:
 g = Game()

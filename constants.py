@@ -2,10 +2,11 @@
 # platform game that we are developing.
 
 # Game-screen:
-WIDTH  = 480
-HEIGHT = 600
-FPS    =  60
-TITLE  = "Platform Jumping"
+WIDTH     = 480
+HEIGHT    = 600
+FPS       =  60
+TITLE     = "Platform Jumping"
+FONT_NAME = 'arial'
 
 # Colours:
 WHITE  = (255, 255, 255)
@@ -19,7 +20,7 @@ YELLOW = (255, 255,   0)
 PLAYER_ACCELERATION =  0.5
 PLAYER_FRICTION     = -0.12
 PLAYER_GRAVITY      =  0.8
-JUMP_HEIGHT         = -20
+JUMP_HEIGHT         =  20
 
 # Starting platforms:
 PLATFORM_LIST = [(0, HEIGHT-40, WIDTH, 40),
