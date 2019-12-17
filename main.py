@@ -45,6 +45,11 @@ class Game:
                 self.highscore = 0
         # Load the spritesheet
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        # Load the cloud images
+        self.cloud_images = []
+        for i in range(1, 4):
+            self.cloud_images.append(pg.image.load(path.join(img_dir, 'cloud{}.png'.format(i))).convert())
+
         # Load some sounds:
         self.snd_dir     = path.join(self.dir, 'snd')
         self.jump_sound  = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
@@ -58,6 +63,7 @@ class Game:
         self.platforms   = pg.sprite.Group()
         self.powerups    = pg.sprite.Group()
         self.mobs        = pg.sprite.Group()
+        self.clouds      = pg.sprite.Group()
         self.player = Player(self)
         for plat in PLATFORM_LIST:
             Platform(self, *plat) # Exploding the list
@@ -116,7 +122,11 @@ class Game:
 
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
+            if random.randrange(100) < 10:
+                Cloud(self)
             self.player.pos.y += max(abs(self.player.vel.y), 2)
+            for cloud in self.clouds:
+                cloud.rect.y += max(abs(self.player.vel.y / randrange(1, 4)), 2)
             for mob in self.mobs:
                 mob.rect.y += max(abs(self.player.vel.y), 2)
                 if mob.rect.top >= HEIGHT:

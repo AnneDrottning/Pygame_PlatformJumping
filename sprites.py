@@ -229,3 +229,23 @@ class Mob(pg.sprite.Sprite):
         self.rect.y     += self.vy
         if self.rect.left > WIDTH+100 or self.rect.right < -100:
             self.kill()
+
+
+class Cloud(pg.sprite.Sprite):
+    def __init__(self, game):
+        self._layer = CLOUD_LAY
+        self.groups = game.all_sprites, game.clouds
+        # Initialize a pygame sprite:
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = choice(self.game.cloud_images)
+        self.image.set_colorkey(BLACK)
+        self.rect   = self.image.get_rect()
+        scale       = randrange(50, 101) / 100
+        self.image  = pg.transform.scale(self.image, ((int(self.rect.width*scale), int(self.rect.height*scale))))
+        self.rect.x = randrange(WIDTH - self.rect.width)
+        self.rect.y = randrange(-500, -50)
+
+    def update(self):
+        if self.rect.top > HEIGHT * 2:
+            self.kill()
