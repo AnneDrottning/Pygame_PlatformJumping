@@ -91,10 +91,9 @@ class Game:
             self.mob_timer = now
             Mob(self)
         # Check if we hit the mob:
-        mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False)
+        mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False, pg.sprite.collide_mask)
         if mob_hits:
             self.playing = False
-
 
         # Check if the player hits a platform
         # Only want to see if we are falling
