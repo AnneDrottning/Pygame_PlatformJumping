@@ -36,6 +36,7 @@ class Player(pg.sprite.Sprite):
         # Variables for the different images:
         self.walking       = False
         self.jumping       = False
+        self.bubble        = False
         self.current_frame = 0 # For animation frames, e.g. walking
         self.last_update   = 0 # What time we made the last change
         # Group all the images in a new method:
@@ -70,12 +71,16 @@ class Player(pg.sprite.Sprite):
         self.jump_frame      = self.game.spritesheet.get_image(*BUNNY_JUMP)
         self.jump_frame.set_colorkey(BLACK)
 
+        # The bubble:
+        self.bubble_frame    = self.game.spritesheet.get_image(*BUBBLE_CIRCLE)
+        self.bubble_frame.set_colorkey(BLACK)
+
     def jump(self):
         # Only want to jump if we are standing on a platform
-        self.rect.x += 2
+        self.rect.x += 5
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.x -= 2
-        if hits and not self.jumping:
+        self.rect.x -= 5
+        if hits and not self.jumping or self.game.lowest.weak:
             self.game.jump_sound.play()
             self.jumping = True
             self.vel.y   = -JUMP_HEIGHT
@@ -122,6 +127,13 @@ class Player(pg.sprite.Sprite):
         else:
             self.walking = False
 
+        # Want to check if you are falling and then have the jump animation
+        if self.vel.y > 0:
+            bottom_jump      = self.rect.bottom
+            self.image       = self.jump_frame
+            self.rect        = self.image.get_rect()
+            self.rect.bottom = bottom_jump
+
         # Need to know if we want to show the standing animation
         if not self.jumping and not self.walking:
             if now - self.last_update > 350:
@@ -144,6 +156,12 @@ class Player(pg.sprite.Sprite):
                 self.rect          = self.image.get_rect()
                 self.rect.bottom   = bottom
 
+        # Show the bubble if we have the bubble protection
+        if self.bubble:
+            bubble_bottom     = self.rect.bottom
+            self.image        = self.bubble_frame
+            self.rect.bottom  = bubble_bottom
+
         # Set our mask:
         self.mask = pg.mask.from_surface(self.image)
 
@@ -157,7 +175,14 @@ class Platform(pg.sprite.Sprite):
         self.game   = game
         images      = [self.game.spritesheet.get_image(*PLAT_LARGE),
                         self.game.spritesheet.get_image(*PLAT_SMALL)]
-        self.image  = choice(images)
+        images_br   = [self.game.spritesheet.get_image(*PLAT_LARGE_DAMAGED),
+                        self.game.spritesheet.get_image(*PLAT_SMALL_DAMAGED)]
+        if randrange(100) < 3:
+            self.image = choice(images_br)
+            self.weak  = True
+        else:
+            self.image  = choice(images)
+            self.weak   = False
         self.image.set_colorkey(BLACK)
         self.rect   = self.image.get_rect()
         self.rect.x = x
@@ -174,8 +199,11 @@ class Pow(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game   = game
         self.plat   = plat
-        self.type   = choice(['boost'])
-        self.image  = self.game.spritesheet.get_image(*POW_BOOST)
+        self.type   = choice(['boost', 'bubble'])
+        if self.type == 'boost':
+            self.image  = self.game.spritesheet.get_image(*POW_BOOST)
+        else:
+            self.image  = self.game.spritesheet.get_image(*POW_BUBBLE)
         self.image.set_colorkey(BLACK)
         self.rect         = self.image.get_rect()
         self.rect.centerx = self.plat.rect.centerx
@@ -229,7 +257,6 @@ class Mob(pg.sprite.Sprite):
         self.rect.y     += self.vy
         if self.rect.left > WIDTH+100 or self.rect.right < -100:
             self.kill()
-
 
 class Cloud(pg.sprite.Sprite):
     def __init__(self, game):

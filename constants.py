@@ -32,6 +32,7 @@ PLAYER_LAYER        =  2
 BOOST_POWER        = 60
 POW_SPAWN_PCT      =  5
 POW_LAYER          =  1
+BUBBLE_POWER       = 70
 
 # Mob properties:
 MOB_SPAWN_FREQ     = 5000 # in time
@@ -61,6 +62,19 @@ PLAT_SMALL_DAMAGED = [382,  204, 200, 100]
 
 # POWERUPS:
 POW_BOOST          = [820, 1805,  71,  70]
+POW_BUBBLE         = [826,  134,  71,  70]
+BUBBLE_CIRCLE      = [  0, 1662, 211, 215]
+
+# ITEMS:
+COIN_GOLD          = [698, 1931, 84, 84]
+GOLD_POINTS        = 100
+GOLD_PCT           =   1
+COIN_SILVER        = [584,  406, 84, 84]
+SILVER_POINTS      =  50
+SILVER_PCT         =   5
+COIN_BRONZE        = [707,  296, 84, 84]
+BRONZE_POINTS      =  20
+BRONZE_PCT         =  10
 
 # MOBS:
 MOB_SPIKE          = [814, 1417,  90, 155]

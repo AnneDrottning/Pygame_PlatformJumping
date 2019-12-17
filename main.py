@@ -51,9 +51,10 @@ class Game:
             self.cloud_images.append(pg.image.load(path.join(img_dir, 'cloud{}.png'.format(i))).convert())
 
         # Load some sounds:
-        self.snd_dir     = path.join(self.dir, 'snd')
-        self.jump_sound  = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
-        self.boost_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Powerup9.wav'))
+        self.snd_dir      = path.join(self.dir, 'snd')
+        self.jump_sound   = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
+        self.boost_sound  = pg.mixer.Sound(path.join(self.snd_dir, 'Powerup9.wav'))
+        self.bubble_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Powerup13.wav'))
 
     def new(self):
         # To start a new game
@@ -99,7 +100,11 @@ class Game:
         # Check if we hit the mob:
         mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False, pg.sprite.collide_mask)
         if mob_hits:
-            self.playing = False
+            if self.player.bubble:
+                self.score += 5
+            else:
+                self.playing = False
+
 
         # Check if the player hits a platform
         # Only want to see if we are falling
@@ -107,18 +112,23 @@ class Game:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
                 # Want to land on the lowest platform:
-                lowest = hits[0]
+                self.lowest = hits[0]
                 for hit in hits:
-                    if hit.rect.bottom > lowest.rect.bottom:
-                        lowest = hit
+                    if hit.rect.bottom > self.lowest.rect.bottom:
+                        self.lowest = hit
                 # Want to finesse how the character lands on the platforms
-                if self.player.pos.x < lowest.rect.right + 10 and \
-                   self.player.pos.x > lowest.rect.left - 10:
+                if self.player.pos.x < self.lowest.rect.right + 10 and \
+                   self.player.pos.x > self.lowest.rect.left - 10:
                    # Only want to land on the platform if our feet are above it
-                   if self.player.pos.y < lowest.rect.centery:
-                       self.player.pos.y   = lowest.rect.top
+                   if self.player.pos.y < self.lowest.rect.centery:
+                       self.player.pos.y   = self.lowest.rect.top
                        self.player.vel.y   = 0
                        self.player.jumping = False
+                       self.player.bubble  = False
+                if self.lowest.weak:
+                    self.lowest.rect.y += 5
+
+
 
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
@@ -146,6 +156,11 @@ class Game:
                 self.player.vel.y   = -BOOST_POWER
                 self.player.jumping = False
                 self.boost_sound.play()
+            if pow.type == 'bubble':
+                self.player.vel.y   = -BUBBLE_POWER
+                self.player.jumping = False
+                self.bubble_sound.play()
+                self.player.bubble  = True
 
         # If we die:
         if self.player.rect.bottom > HEIGHT:
@@ -174,9 +189,17 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
+                if event.key == pg.K_m:
+                    pg.mixer.music.set_volume(0)
+                    self.jump_sound.set_volume(0)
+                    self.boost_sound.set_volume(0)
+                    self.bubble_sound.set_volume(0)
             if event.type == pg.KEYUP:
                 if event.key == pg.K_SPACE:
                     self.player.jump_cut()
+            #if self.lowest.weak:
+            #    if event.type == KILL_THE_PLATFORM:
+            #        self.lowest.kill()
 
     def draw(self):
         # Drawing the game loop to the screen
@@ -199,6 +222,7 @@ class Game:
                         HEIGHT * 3 / 4)
         self.draw_text("High Score: " + str(self.highscore), 22, WHITE,
                         WIDTH / 2, 15)
+        self.draw_text("Press 'm' to mute", 12, WHITE, WIDTH / 2, HEIGHT-20)
         pg.display.flip()
         self.wait_for_key()
         pg.mixer.music.fadeout(500)
