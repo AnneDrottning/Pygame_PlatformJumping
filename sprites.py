@@ -30,9 +30,15 @@ class Player(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         # Want the player to know about the game
         self.game  = game
+        # Variables for the different images:
+        self.walking       = False
+        self.jumping       = False
+        self.current_frame = 0 # For animation frames, e.g. walking
+        self.last_update   = 0 # What time we made the last change
+        # Group all the images in a new method:
+        self.load_images()
         # Create a simple sprite:
-        self.image = self.game.spritesheet.get_image(*BUNNY_READY)
-        self.image.set_colorkey(BLACK)
+        self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
 
@@ -40,6 +46,27 @@ class Player(pg.sprite.Sprite):
         self.pos = vec(WIDTH/2, HEIGHT/2)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
+
+    def load_images(self):
+        # Load the images for the player sprite:
+        # The standing frames:
+        self.standing_frames = [self.game.spritesheet.get_image(*BUNNY_READY),
+                                self.game.spritesheet.get_image(*BUNNY_STAND)]
+        for frame in self.standing_frames:
+            frame.set_colorkey(BLACK)
+        # The walking right frames:
+        self.walk_frames_r   = [self.game.spritesheet.get_image(*BUNNY_WALK1),
+                                self.game.spritesheet.get_image(*BUNNY_WALK2)]
+        # The walking left frames:
+        self.walk_frames_l   = []
+        for frame in self.walk_frames_r:
+            frame.set_colorkey(BLACK)
+            self.walk_frames_l.append(pg.transform.flip(frame, True, False))
+
+        # The jump frame
+        self.jump_frame      = self.game.spritesheet.get_image(*BUNNY_JUMP)
+        self.jump_frame.set_colorkey(BLACK)
+
 
     def jump(self):
         # Only want to jump if we are standing on a platform
@@ -51,6 +78,7 @@ class Player(pg.sprite.Sprite):
 
 
     def update(self):
+        self.animate()
         self.acc = vec(0, PLAYER_GRAVITY)
         # Check what keys are pressed:
         keys = pg.key.get_pressed()
@@ -62,16 +90,54 @@ class Player(pg.sprite.Sprite):
         # Adjust the sprite placement according to the speed
         self.acc.x += self.vel.x * PLAYER_FRICTION
         self.vel += self.acc
+        if abs(self.vel.x) < 0.1:
+            self.vel.x = 0
         self.pos += self.vel + (0.5 * self.acc)
 
         # Wrap around the sides of the screen
-        if self.pos.x > WIDTH:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = WIDTH
+        if self.pos.x > WIDTH + self.rect.width / 2:
+            self.pos.x = 0 - self.rect.width / 2
+        if self.pos.x < 0 - self.rect.width / 2:
+            self.pos.x = WIDTH + self.rect.width / 2
 
 
         self.rect.midbottom = self.pos
+
+    def animate(self):
+        # Will handle what frame we want to use.
+        # Find out what time in the game we are at:
+        now = pg.time.get_ticks()
+        # Find out if we are walking
+        if self.vel.x != 0:
+            self.walking = True
+        else:
+            self.walking = False
+
+        # Need to know if we want to show the standing animation
+        if not self.jumping and not self.walking:
+            if now - self.last_update > 350:
+                self.last_update   = now
+                self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+                bottom             = self.rect.bottom
+                self.image         = self.standing_frames[self.current_frame]
+                self.rect          = self.image.get_rect()
+                self.rect.bottom   = bottom
+        # Show the walk animation
+        if self.walking:
+            if now - self.last_update > 180:
+                self.last_update   = now
+                self.current_frame = (self.current_frame + 1) % len(self.walk_frames_l)
+                bottom             = self.rect.bottom
+                if self.vel.x > 0:
+                    self.image     = self.walk_frames_r[self.current_frame]
+                else:
+                    self.image     = self.walk_frames_l[self.current_frame]
+                self.rect          = self.image.get_rect()
+                self.rect.bottom   = bottom
+
+
+
+
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):

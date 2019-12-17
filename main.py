@@ -31,7 +31,7 @@ class Game:
         # highscore
         self.dir = path.dirname(__file__)
         img_dir  = path.join(self.dir, 'img')
-        with open(path.join(self.dir, HS_FILE), 'w') as f:
+        with open(path.join(self.dir, HS_FILE), 'r') as f:
             # 'w' will create a file if it does not exist, and allow
             # both reading and writing
             try:
