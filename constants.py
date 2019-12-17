@@ -24,7 +24,17 @@ BGCOLOUR  = LIGHTBLUE
 PLAYER_ACCELERATION =  0.5
 PLAYER_FRICTION     = -0.12
 PLAYER_GRAVITY      =  0.8
-JUMP_HEIGHT         =  20
+JUMP_HEIGHT         = 20
+PLAYER_LAYER        =  2
+
+# Powerup properties:
+BOOST_POWER        = 60
+POW_SPAWN_PCT      =  5
+POW_LAYER          =  1
+
+# Mob properties:
+MOB_SPAWN_FREQ     = 5000 # in time
+MOB_LAYER          =    2
 
 # Starting platforms:
 PLATFORM_LIST = [(0, HEIGHT - 60),
@@ -32,6 +42,7 @@ PLATFORM_LIST = [(0, HEIGHT - 60),
             (125, HEIGHT - 350),
             (350, 200),
             (175, 100)]
+PLATFORM_LAYER = 1
 
 # SPRITES:
 BUNNY_READY = [614, 1063, 120, 191]
@@ -46,3 +57,11 @@ PLAT_LARGE         = [  0,  288, 380,  94]
 PLAT_SMALL         = [213, 1662, 201, 100]
 PLAT_LARGE_DAMAGED = [  0,  384, 380,  94]
 PLAT_SMALL_DAMAGED = [382,  204, 200, 100]
+
+# POWERUPS:
+POW_BOOST          = [820, 1805,  71,  70]
+
+# MOBS:
+MOB_SPIKE          = [814, 1417,  90, 155]
+MOB_FLY_UP         = [566,  510, 122, 139]
+MOB_FLY_DOWN       = [568, 1534, 122, 135]

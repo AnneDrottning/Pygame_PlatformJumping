@@ -2,7 +2,7 @@
 
 # Import packages
 import pygame as     pg
-from   random import choice
+from   random import choice, randrange
 
 # Import files
 from constants import *
@@ -27,8 +27,10 @@ class Spritesheet:
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
+        self._layer = PLAYER_LAYER
+        self.groups = game.all_sprites
         # Initialize a pygame sprite:
-        pg.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self, self.groups)
         # Want the player to know about the game
         self.game  = game
         # Variables for the different images:
@@ -67,7 +69,6 @@ class Player(pg.sprite.Sprite):
         # The jump frame
         self.jump_frame      = self.game.spritesheet.get_image(*BUNNY_JUMP)
         self.jump_frame.set_colorkey(BLACK)
-
 
     def jump(self):
         # Only want to jump if we are standing on a platform
@@ -145,9 +146,11 @@ class Player(pg.sprite.Sprite):
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
+        self._layer = PLATFORM_LAYER
+        self.groups = game.all_sprites, game.platforms
         # Want to define the size and position everytime we define a new
         # platform
-        pg.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self, self.groups)
         self.game   = game
         images      = [self.game.spritesheet.get_image(*PLAT_LARGE),
                         self.game.spritesheet.get_image(*PLAT_SMALL)]
@@ -156,3 +159,69 @@ class Platform(pg.sprite.Sprite):
         self.rect   = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        if randrange(100) < POW_SPAWN_PCT:
+            Pow(self.game, self)
+
+class Pow(pg.sprite.Sprite):
+    def __init__(self, game, plat):
+        self._layer = POW_LAYER
+        # The two groups we want to add the powerup sprite to.
+        self.groups = game.all_sprites, game.powerups
+        # Needs to know the platform on which we want the powerup to spawn
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game   = game
+        self.plat   = plat
+        self.type   = choice(['boost'])
+        self.image  = self.game.spritesheet.get_image(*POW_BOOST)
+        self.image.set_colorkey(BLACK)
+        self.rect         = self.image.get_rect()
+        self.rect.centerx = self.plat.rect.centerx
+        self.rect.bottom  = self.plat.rect.top - 5
+
+    def update(self):
+        # If the platform moves, so will the platform
+        self.rect.bottom = self.plat.rect.top - 5
+        if not self.game.platforms.has(self.plat):
+            self.kill()
+
+class Mob(pg.sprite.Sprite):
+    def __init__(self, game):
+        self._layer = MOB_LAYER
+        # The two groups we want to add the powerup sprite to.
+        self.groups = game.all_sprites, game.mobs
+        # Needs to know the platform on which we want the powerup to spawn
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game       = game
+        self.image_up   = self.game.spritesheet.get_image(*MOB_FLY_UP)
+        self.image_up.set_colorkey(BLACK)
+        self.image_down = self.game.spritesheet.get_image(*MOB_FLY_DOWN)
+        self.image_down.set_colorkey(BLACK)
+        self.image      = self.image_up
+        self.rect       = self.image.get_rect()
+        # Spawn on a random side, outside the screen
+        self.rect.centerx  = choice([-100, WIDTH+100])
+        self.vx            = randrange(1, 4)
+        if self.rect.centerx > WIDTH:
+            self.vx *= -1
+
+        self.rect.y = randrange(HEIGHT / 2)
+        self.vy     = 0
+        self.dy     = 0.5 # To adjust the acceleration
+
+    def update(self):
+        self.rect.x += self.vx
+        self.vy     += self.dy
+        if self.vy > 3 or self.vy < -3:
+            self.dy *= -1
+        center = self.rect.center
+        if self.dy < 0:
+            # Moving upwards:
+            self.image = self.image_up
+        else:
+            self.image = self.image_down
+
+        self.rect        = self.image.get_rect()
+        self.rect.center = center
+        self.rect.y     += self.vy
+        if self.rect.left > WIDTH+100 or self.rect.right < -100:
+            self.kill()

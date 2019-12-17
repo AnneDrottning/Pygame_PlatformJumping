@@ -46,22 +46,22 @@ class Game:
         # Load the spritesheet
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
         # Load some sounds:
-        self.snd_dir    = path.join(self.dir, 'snd')
-        self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
-
+        self.snd_dir     = path.join(self.dir, 'snd')
+        self.jump_sound  = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
+        self.boost_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Powerup9.wav'))
 
     def new(self):
         # To start a new game
         self.score       = 0
         # Create the sprites
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
         self.platforms   = pg.sprite.Group()
+        self.powerups    = pg.sprite.Group()
+        self.mobs        = pg.sprite.Group()
         self.player = Player(self)
-        self.all_sprites.add(self.player)
         for plat in PLATFORM_LIST:
-            p = Platform(self, *plat) # Exploding the list
-            self.all_sprites.add(p)
-            self.platforms.add(p)
+            Platform(self, *plat) # Exploding the list
+        self.mob_timer = 0 # When the last mob was spawned
         # Music to play during the game
         pg.mixer.music.load(path.join(self.snd_dir, 'happytune.wav'))
         self.run()
@@ -84,6 +84,18 @@ class Game:
         # The game loop update
         # Update:
         self.all_sprites.update()
+
+        # Check if we want to spawn a mob or not:
+        now = pg.time.get_ticks()
+        if now - self.mob_timer > MOB_SPAWN_FREQ + random.choice([-1000, -500, 0, 500, 1000]):
+            self.mob_timer = now
+            Mob(self)
+        # Check if we hit the mob:
+        mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False)
+        if mob_hits:
+            self.playing = False
+
+
         # Check if the player hits a platform
         # Only want to see if we are falling
         if self.player.vel.y > 0:
@@ -94,21 +106,38 @@ class Game:
                 for hit in hits:
                     if hit.rect.bottom > lowest.rect.bottom:
                         lowest = hit
-                # Only want to land on the platform if our feet are above it
-                if self.player.pos.y < lowest.rect.centery:
-                    self.player.pos.y   = lowest.rect.top
-                    self.player.vel.y   = 0
-                    self.player.jumping = False
+                # Want to finesse how the character lands on the platforms
+                if self.player.pos.x < lowest.rect.right + 10 and \
+                   self.player.pos.x > lowest.rect.left - 10:
+                   # Only want to land on the platform if our feet are above it
+                   if self.player.pos.y < lowest.rect.centery:
+                       self.player.pos.y   = lowest.rect.top
+                       self.player.vel.y   = 0
+                       self.player.jumping = False
 
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
+            for mob in self.mobs:
+                mob.rect.y += max(abs(self.player.vel.y), 2)
+                if mob.rect.top >= HEIGHT:
+                    mob.kill()
+
             for plat in self.platforms:
                 plat.rect.y += max(abs(self.player.vel.y), 2)
                 # Remove the platforms if they go off the screen
                 if plat.rect.top >= HEIGHT:
                     plat.kill()
                     self.score += 10
+
+        # Check for collision with powerups:
+        pow_hits = pg.sprite.spritecollide(self.player, self.powerups, True)
+        for pow in pow_hits:
+            if pow.type == 'boost':
+                self.player.vel.y   = -BOOST_POWER
+                self.player.jumping = False
+                self.boost_sound.play()
+
         # If we die:
         if self.player.rect.bottom > HEIGHT:
             for sprite in self.all_sprites:
@@ -121,10 +150,8 @@ class Game:
         # Need to spawn new platforms to keep the game going
         while len(self.platforms) < 6:
             width = random.randrange(50, 100)
-            p = Platform(self, random.randrange(0, WIDTH - width),
+            Platform(self, random.randrange(0, WIDTH - width),
                          random.randrange(-75, -30))
-            self.platforms.add(p)
-            self.all_sprites.add(p)
 
     def events(self):
         # The game loop events
@@ -146,8 +173,6 @@ class Game:
         # Drawing the game loop to the screen
         self.screen.fill(BGCOLOUR)
         self.all_sprites.draw(self.screen)
-        # Make sure the player will always be at the front
-        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         # After drawing everything, we flip the display
         pg.display.flip()
