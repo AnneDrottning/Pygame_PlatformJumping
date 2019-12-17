@@ -1,3 +1,8 @@
+# Credits:
+# Art from Kenney.nl
+# Happy Tune by http://opengameart.org/users/syncopika
+# Yippee by http://opengameart.org/users/snabisch
+
 # Import packages
 import pygame as     pg
 import random
@@ -40,6 +45,10 @@ class Game:
                 self.highscore = 0
         # Load the spritesheet
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        # Load some sounds:
+        self.snd_dir    = path.join(self.dir, 'snd')
+        self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump.wav'))
+
 
     def new(self):
         # To start a new game
@@ -53,10 +62,14 @@ class Game:
             p = Platform(self, *plat) # Exploding the list
             self.all_sprites.add(p)
             self.platforms.add(p)
+        # Music to play during the game
+        pg.mixer.music.load(path.join(self.snd_dir, 'happytune.wav'))
         self.run()
 
     def run(self):
         # The actual game loop
+        # Play the music:
+        pg.mixer.music.play(loops=-1) # loop infinetly
         # Keep loop running at the right speed
         self.playing = True
         while self.playing:
@@ -64,6 +77,8 @@ class Game:
             self.events()
             self.update()
             self.draw()
+        # Let the music gradually fadeout:
+        pg.mixer.music.fadeout(500)
 
     def update(self):
         # The game loop update
@@ -84,7 +99,7 @@ class Game:
                     self.player.pos.y   = lowest.rect.top
                     self.player.vel.y   = 0
                     self.player.jumping = False
-                    
+
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
@@ -138,6 +153,9 @@ class Game:
         pg.display.flip()
 
     def show_start_screen(self):
+        # Include music:
+        pg.mixer.music.load(path.join(self.snd_dir, 'Yippee.wav'))
+        pg.mixer.music.play(loops=-1)
         # Game start screen
         self.screen.fill(BGCOLOUR)
         self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
@@ -149,8 +167,12 @@ class Game:
                         WIDTH / 2, 15)
         pg.display.flip()
         self.wait_for_key()
+        pg.mixer.music.fadeout(500)
 
     def show_go_screen(self):
+        # Music for the screen
+        pg.mixer.music.load(path.join(self.snd_dir, 'Yippee.wav'))
+        pg.mixer.music.play(loops=-1)
         # Game over / start over screen
         if not self.running:
             return
@@ -171,6 +193,7 @@ class Game:
 
         pg.display.flip()
         self.wait_for_key()
+        pg.mixer.music.fadeout(500)
 
     def wait_for_key(self):
         # Will pause the game, waiting for a key event.
