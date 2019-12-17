@@ -2,12 +2,13 @@
 # platform game that we are developing.
 
 # Game-screen:
-WIDTH     = 480
-HEIGHT    = 600
-FPS       =  60
-TITLE     = "Platform Jumping"
-FONT_NAME = 'arial'
-HS_FILE   = "highscore.txt"
+WIDTH       = 480
+HEIGHT      = 600
+FPS         =  60
+TITLE       = "Platform Jumping"
+FONT_NAME   = 'arial'
+HS_FILE     = "highscore.txt"
+SPRITESHEET = "spritesheet_jumper.png"
 
 # Colours:
 WHITE     = (255, 255, 255)
@@ -31,3 +32,11 @@ PLATFORM_LIST = [(0, HEIGHT-40, WIDTH, 40),
             (125, HEIGHT - 350, 100, 20),
             (350, 200, 100, 20),
             (175, 100, 50, 20)]
+
+# SPRITES:
+BUNNY_READY = [614, 1063, 120, 191]
+BUNNY_STAND = [690,  406, 120, 201]
+BUNNY_WALK1 = [678,  860, 120, 201]
+BUNNY_WALK2 = [692, 1458, 120, 207]
+BUNNY_JUMP  = [382,  763, 150, 181]
+BUNNY_HURT  = [382,  946, 150, 174]

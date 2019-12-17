@@ -30,6 +30,7 @@ class Game:
         # Want to load the highscore file to see if we have a previous
         # highscore
         self.dir = path.dirname(__file__)
+        img_dir  = path.join(self.dir, 'img')
         with open(path.join(self.dir, HS_FILE), 'w') as f:
             # 'w' will create a file if it does not exist, and allow
             # both reading and writing
@@ -37,6 +38,9 @@ class Game:
                 self.highscore = int(f.read())
             except:
                 self.highscore = 0
+        # Load the spritesheet
+        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+
 
     def new(self):
         # To start a new game

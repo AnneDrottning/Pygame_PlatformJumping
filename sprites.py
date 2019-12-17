@@ -9,6 +9,21 @@ from constants import *
 # Shortcuts:
 vec = pg.math.Vector2
 
+class Spritesheet:
+    # A class to let us slice up the spritesheet to get the
+    # graphics we want.
+    # Here we load and parse the spritesheet
+    def __init__(self, filename):
+        self.spritesheet = pg.image.load(filename).convert()
+
+    def get_image(self, x, y, w, h):
+        # To extract the specific chunck of the spreadsheet
+        image = pg.Surface((w, h))
+        image.blit(self.spritesheet, (0, 0), (x, y, w, h))
+        # Need to resize the images:
+        image = pg.transform.scale(image, (w // 2, h // 2))
+        return image
+
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
         # Initialize a pygame sprite:
@@ -16,8 +31,8 @@ class Player(pg.sprite.Sprite):
         # Want the player to know about the game
         self.game  = game
         # Create a simple sprite:
-        self.image = pg.Surface((30, 40))
-        self.image.fill(YELLOW);
+        self.image = self.game.spritesheet.get_image(*BUNNY_READY)
+        self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
 
