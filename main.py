@@ -40,8 +40,7 @@ class Game:
                 self.highscore = 0
         # Load the spritesheet
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
-
-
+        
     def new(self):
         # To start a new game
         self.score       = 0
@@ -51,7 +50,7 @@ class Game:
         self.player = Player(self)
         self.all_sprites.add(self.player)
         for plat in PLATFORM_LIST:
-            p = Platform(*plat) # Exploding the list
+            p = Platform(self, *plat) # Exploding the list
             self.all_sprites.add(p)
             self.platforms.add(p)
         self.run()
@@ -79,7 +78,7 @@ class Game:
                 self.player.vel.y = 0
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
-            self.player.pos.y += abs(self.player.vel.y)
+            self.player.pos.y += max(abs(self.player.vel.y), 2)
             for plat in self.platforms:
                 plat.rect.y += abs(self.player.vel.y)
                 # Remove the platforms if they go off the screen
@@ -98,9 +97,8 @@ class Game:
         # Need to spawn new platforms to keep the game going
         while len(self.platforms) < 6:
             width = random.randrange(50, 100)
-            p = Platform(random.randrange(0, WIDTH - width),
-                         random.randrange(-75, -30),
-                         width, 20)
+            p = Platform(self, random.randrange(0, WIDTH - width),
+                         random.randrange(-75, -30))
             self.platforms.add(p)
             self.all_sprites.add(p)
 
@@ -121,6 +119,8 @@ class Game:
         # Drawing the game loop to the screen
         self.screen.fill(BGCOLOUR)
         self.all_sprites.draw(self.screen)
+        # Make sure the player will always be at the front
+        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         # After drawing everything, we flip the display
         pg.display.flip()

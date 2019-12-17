@@ -27,11 +27,11 @@ PLAYER_GRAVITY      =  0.8
 JUMP_HEIGHT         =  20
 
 # Starting platforms:
-PLATFORM_LIST = [(0, HEIGHT-40, WIDTH, 40),
-            (WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20),
-            (125, HEIGHT - 350, 100, 20),
-            (350, 200, 100, 20),
-            (175, 100, 50, 20)]
+PLATFORM_LIST = [(0, HEIGHT-50),
+            (WIDTH / 2 - 50, HEIGHT * 3 / 4 - 50),
+            (125, HEIGHT - 350),
+            (350, 200),
+            (175, 100)]
 
 # SPRITES:
 BUNNY_READY = [614, 1063, 120, 191]
@@ -40,3 +40,9 @@ BUNNY_WALK1 = [678,  860, 120, 201]
 BUNNY_WALK2 = [692, 1458, 120, 207]
 BUNNY_JUMP  = [382,  763, 150, 181]
 BUNNY_HURT  = [382,  946, 150, 174]
+
+# PLATFORMS:
+PLAT_LARGE         = [  0,  288, 380,  94]
+PLAT_SMALL         = [213, 1662, 201, 100]
+PLAT_LARGE_DAMAGED = [  0,  384, 380,  94]
+PLAT_SMALL_DAMAGED = [382,  204, 200, 100]
