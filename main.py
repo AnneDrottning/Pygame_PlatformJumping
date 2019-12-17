@@ -40,7 +40,7 @@ class Game:
                 self.highscore = 0
         # Load the spritesheet
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
-        
+
     def new(self):
         # To start a new game
         self.score       = 0
@@ -74,13 +74,22 @@ class Game:
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
-                self.player.pos.y = hits[0].rect.top
-                self.player.vel.y = 0
+                # Want to land on the lowest platform:
+                lowest = hits[0]
+                for hit in hits:
+                    if hit.rect.bottom > lowest.rect.bottom:
+                        lowest = hit
+                # Only want to land on the platform if our feet are above it
+                if self.player.pos.y < lowest.rect.centery:
+                    self.player.pos.y   = lowest.rect.top
+                    self.player.vel.y   = 0
+                    self.player.jumping = False
+                    
         # Want to check if we need to scroll the screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
             for plat in self.platforms:
-                plat.rect.y += abs(self.player.vel.y)
+                plat.rect.y += max(abs(self.player.vel.y), 2)
                 # Remove the platforms if they go off the screen
                 if plat.rect.top >= HEIGHT:
                     plat.kill()
@@ -114,6 +123,9 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_SPACE:
+                    self.player.jump_cut()
 
     def draw(self):
         # Drawing the game loop to the screen

@@ -74,9 +74,15 @@ class Player(pg.sprite.Sprite):
         self.rect.x += 2
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 2
-        if hits:
-            self.vel.y = -JUMP_HEIGHT
+        if hits and not self.jumping:
+            self.jumping = True
+            self.vel.y   = -JUMP_HEIGHT
 
+    def jump_cut(self):
+        # Shorter jump
+        if self.jumping:
+            if self.vel.y < -3:
+                self.vel.y = -3
 
     def update(self):
         self.animate()
